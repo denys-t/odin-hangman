@@ -1,21 +1,40 @@
 class Hangman
+  require 'json'
+
   def initialize
-    @secret_word = pick_random_word
-    @player_guess = Array.new(@secret_word.length, '_')
     @used_letters = []
     @countdown = 11
-
-    self.start
   end
 
-  private
-
   def start
+    if @saved_game
+      puts 'Would you like to continue the last saved game? [y/n]'
+      answer = gets.chomp.downcase
+    else
+      answer = 'n'
+    end
+
+    if answer == 'y'
+      load_game
+    else 
+      @secret_word = pick_random_word
+      @player_guess = Array.new(@secret_word.length, '_')
+    end
+
     @secret_word_arr = @secret_word.split('')
+
+    puts 'You can save your progress by typing "save".'
 
     until end_of_game? do
       puts 'Enter a letter (A-Z, a-z):'
       letter = gets.chomp
+
+      if letter == 'save'
+        save_game
+        @saved_game = true
+        return
+      end
+
       was_found = false
 
       @secret_word_arr.each_with_index do |ltr, i|
@@ -26,7 +45,7 @@ class Hangman
       end
 
       unless was_found
-        @used_letters << letter
+        @used_letters << letter if @used_letters.find_index(letter).nil?
         @countdown -= 1
       end
 
@@ -35,6 +54,8 @@ class Hangman
       p @countdown
     end
   end
+
+  private
 
   def pick_random_word
     random_line = ''
@@ -59,7 +80,28 @@ class Hangman
       return false
     end
   end
+
+  def save_game
+    temp_hash = {'secret_word' => @secret_word,
+                 'used_letters' => @used_letters,
+                 'player_guess' => @player_guess,
+                 'countdown' => @countdown}
+    json_string = JSON.dump temp_hash
+
+    File.open('temp.txt', 'w') { |f| f.write(json_string)}
+  end
+
+  def load_game
+      temp_file = File.read('temp.txt')
+      temp_hash = JSON.parse(temp_file)
+
+      @secret_word = temp_hash['secret_word']
+      @used_letters = temp_hash['used_letters']
+      @player_guess = temp_hash['player_guess']
+      @countdown = temp_hash['countdown']
+  end
   
 end
 
-Hangman.new
+game = Hangman.new
+game.start

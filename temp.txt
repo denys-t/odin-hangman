@@ -1,1 +1,1 @@
-{"secret_word":"jersey","used_letters":["a","f","t"],"player_guess":["_","e","_","_","e","_"],"countdown":8}
+{"secret_word":"watts","used_letters":["z","d","q"],"player_guess":["w","a","_","_","s"],"countdown":9}

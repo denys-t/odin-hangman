@@ -2,8 +2,7 @@ class Hangman
   require 'json'
 
   def initialize
-    @used_letters = []
-    @countdown = 11
+    
   end
 
   def start
@@ -16,7 +15,9 @@ class Hangman
 
     if answer == 'y'
       load_game
-    else 
+    else
+      @used_letters = []
+      @countdown = 12
       @secret_word = pick_random_word
       @player_guess = Array.new(@secret_word.length, '_')
     end
@@ -25,11 +26,11 @@ class Hangman
 
     puts 'You can save your progress by typing "save".'
 
-    until end_of_game? do
+    until end_of_game?
       puts 'Enter a letter (A-Z, a-z):'
       letter = gets.chomp
 
-      if letter == 'save'
+      if letter.downcase == 'save'
         save_game
         @saved_game = true
         return
@@ -47,6 +48,10 @@ class Hangman
       unless was_found
         @used_letters << letter if @used_letters.find_index(letter).nil?
         @countdown -= 1
+
+        hangman_sketch = File.open('hangman.txt', 'r')
+        hangman_sketch.readlines.drop((11 - @countdown) * 10).take(9).each { |line| puts line }
+        hangman_sketch.close
       end
 
       p @player_guess
@@ -64,8 +69,9 @@ class Hangman
       until random_line.length.between?(5,12)
         random_line = file_lines[Random.rand(0...file_lines.size())].strip
       end
-    end 
-  
+      file.close
+    end
+
     random_line
   end
 
@@ -99,6 +105,8 @@ class Hangman
       @used_letters = temp_hash['used_letters']
       @player_guess = temp_hash['player_guess']
       @countdown = temp_hash['countdown']
+      
+      temp_file.close
   end
   
 end
